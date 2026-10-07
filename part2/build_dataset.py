@@ -10,6 +10,7 @@
 
 import argparse
 import random
+import re
 import sys
 from pathlib import Path
 
@@ -49,6 +50,8 @@ def main():
     ap.add_argument("--n_test_a", type=int, default=1000)
     ap.add_argument("--identity_ratio", type=float, default=0.1)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--max_run", type=int, default=10,
+                    help="띄어쓰기 없이 한글이 이 글자 수보다 길게 붙은 원문은 제외 (원문 품질)")
     ap.add_argument("--level", default="normal", choices=["normal", "light"], help="난독화 강도")
     ap.add_argument("--out", default="data/pairs", help="출력 폴더 (강도별로 나눠 저장 가능)")
     args = ap.parse_args()
@@ -56,6 +59,11 @@ def main():
 
     train_src = read(ROOT / "data/clean/train.txt")
     test_src = read(ROOT / "data/clean/test.txt")
+    long_run = re.compile(r"[가-힣]{%d,}" % (args.max_run + 1))
+    n_before = len(train_src) + len(test_src)
+    train_src = [s for s in train_src if not long_run.search(s)]
+    test_src = [s for s in test_src if not long_run.search(s)]
+    print(f"붙여쓰기 긴 원문 제외: {n_before - len(train_src) - len(test_src):,}문장")
     test_set = set(test_src)
     train_src = [s for s in train_src if s not in test_set]  # 출처가 달라도 같은 문장이면 제외
     rng.shuffle(train_src)

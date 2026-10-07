@@ -21,6 +21,34 @@ KoBART 기반 한국어 문법 교정 모델(`Soyoung97/gec_kr`)에 (난독문, 
 - **그 폴더 밖의 기존 폴더·파일은 절대 수정·삭제·이동하지 않는다** (읽기도 필요한 경우에만).
 - 서버 주소, 프로젝트 폴더 경로, 사용할 GPU는 확정되면 여기에 적는다.
 
+### 서버·폴더·모델 위치
+
+- 서버: `billy@223.194.115.11` (SSH 포트 `10022`), GPU: RTX A5000 24GB 1장 (0번)
+- 프로젝트 폴더: `/home/billy/UnBnB` (`~/UnBnB`)
+- 실행 환경: `~/UnBnB/.venv` (Python 3.10, torch 2.6.0+cu124, transformers 4.46.3)
+  - 실행 전 `export HF_HOME=~/UnBnB/.hf_cache TMPDIR=~/UnBnB/tmp` (기존 캐시·임시 폴더 안 씀)
+- 코드: 원본은 git(맥), 서버에는 rsync로 복사한 실행용 사본 (서버 쪽은 git 아님)
+- 모델·데이터는 용량 때문에 git에 올리지 않고 서버에만 있다.
+
+| 모델 | 서버 경로 | 내용 |
+|---|---|---|
+| **최고 모델 (현재)** | `~/UnBnB/models/normal_e6` | 어휘 확장 gec_kr + normal 8만 쌍, 6에폭. 평가 A 완전 일치 63.7% |
+| 실험 3 | `~/UnBnB/models/normal_v4_e6` | 원문당 난독문 4개, 6에폭 (2026-10-07 학습 중) |
+| 실험 | `~/UnBnB/models/full` | normal, 3에폭 (54.4%) |
+| 실험 | `~/UnBnB/models/light_e6` | light, 6에폭 (46.6%) |
+| 시험 학습 | `~/UnBnB/models/trial_10k` | 1만 쌍, 1에폭 |
+| 학습 시작점 | `~/UnBnB/models/gec_kr_ext` | gec_kr + 빠진 한글 음절 6,295자 어휘 추가 (학습 전) |
+
+| 데이터 | 서버 경로 |
+|---|---|
+| NSMC 원본 | `~/UnBnB/data/raw` |
+| 깨끗한 원문 | `~/UnBnB/data/clean/{train,test}.txt` |
+| 학습 쌍 (normal / light / 난독문 4개) | `~/UnBnB/data/pairs`, `data/pairs_light`, `data/pairs_v4` |
+| 로그 | `~/UnBnB/logs/` |
+
+- 모델 불러오기: `BartForConditionalGeneration.from_pretrained("~/UnBnB/models/normal_e6")` + 같은 폴더의 토크나이저 (`part1/gec_utils.py`의 `load()` 사용, 생성 시 `repetition_penalty=1.0`)
+- 모델을 새로 학습하면 이 표를 갱신한다.
+
 ## 필수 규칙: 작업 기록 남기기
 
 새 창을 열거나 다른 팀원이 이어서 작업해도 무엇을 했는지 알 수 있도록, **코드 작성·실행·조사 등 작업을 하면 바로 `작업기록.md`에 기록한다.**

@@ -20,7 +20,8 @@ def encode(tok, text):
 
 
 @torch.no_grad()
-def correct(texts, tok, model, device, batch_size=64, num_beams=4, max_length=128):
+def correct(texts, tok, model, device, batch_size=64, num_beams=4, max_length=128, repetition_penalty=2.0):
+    """repetition_penalty 기본값 2.0은 README 설정 (기준 모델용). 학습한 모델은 1.0으로 부른다."""
     pad = tok.pad_token_id
     outs = []
     for b in range(0, len(texts), batch_size):
@@ -30,6 +31,6 @@ def correct(texts, tok, model, device, batch_size=64, num_beams=4, max_length=12
         mask = (input_ids != pad).long()
         gen = model.generate(input_ids, attention_mask=mask, max_length=max_length,
                              eos_token_id=tok.eos_token_id, num_beams=num_beams,
-                             early_stopping=True, repetition_penalty=2.0)
+                             early_stopping=True, repetition_penalty=repetition_penalty)
         outs += tok.batch_decode(gen, skip_special_tokens=True)
     return [o.strip() for o in outs]

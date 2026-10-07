@@ -29,12 +29,12 @@ def write(path, rows):
             f.write(f"{x}\t{y}\t{r}\n")
 
 
-def make_pairs(origs, rng, n_variants):
+def make_pairs(origs, rng, n_variants, level):
     rows = []
     for s in origs:
         seen = set()
         for _ in range(n_variants):
-            obf, applied = obfuscate(s, rng)
+            obf, applied = obfuscate(s, rng, level=level)
             if obf in seen or check_pair(obf, s):
                 continue
             seen.add(obf)
@@ -49,6 +49,8 @@ def main():
     ap.add_argument("--n_test_a", type=int, default=1000)
     ap.add_argument("--identity_ratio", type=float, default=0.1)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--level", default="normal", choices=["normal", "light"], help="난독화 강도")
+    ap.add_argument("--out", default="data/pairs", help="출력 폴더 (강도별로 나눠 저장 가능)")
     args = ap.parse_args()
     rng = random.Random(args.seed)
 
@@ -60,14 +62,14 @@ def main():
     val_src, train_src = train_src[:args.n_val], train_src[args.n_val:]
     test_a_src = rng.sample(test_src, min(args.n_test_a, len(test_src)))
 
-    train = make_pairs(train_src, rng, args.n_variants)
+    train = make_pairs(train_src, rng, args.n_variants, args.level)
     n_id = int(len(train) * args.identity_ratio)
     train += [(s, s, "원문유지") for s in rng.sample(train_src, min(n_id, len(train_src)))]
     rng.shuffle(train)
-    val = make_pairs(val_src, rng, 1)
-    test_a = make_pairs(test_a_src, rng, 1)
+    val = make_pairs(val_src, rng, 1, args.level)
+    test_a = make_pairs(test_a_src, rng, 1, args.level)
 
-    out = ROOT / "data/pairs"
+    out = ROOT / args.out
     out.mkdir(parents=True, exist_ok=True)
     write(out / "train.tsv", train)
     write(out / "val.tsv", val)

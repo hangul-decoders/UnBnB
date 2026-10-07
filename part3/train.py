@@ -49,6 +49,7 @@ def main():
     ap.add_argument("--max_len", type=int, default=96)
     ap.add_argument("--n_val_gen", type=int, default=500, help="완전 일치율을 잴 검증 문장 수")
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--data", default="data/pairs", help="train.tsv, val.tsv가 있는 폴더")
     args = ap.parse_args()
 
     random.seed(args.seed)
@@ -57,8 +58,8 @@ def main():
     tok = PreTrainedTokenizerFast.from_pretrained(args.init)
     model = BartForConditionalGeneration.from_pretrained(args.init).to(device)
 
-    train = read_tsv(ROOT / "data/pairs/train.tsv", args.limit)
-    val = read_tsv(ROOT / "data/pairs/val.tsv")
+    train = read_tsv(ROOT / args.data / "train.tsv", args.limit)
+    val = read_tsv(ROOT / args.data / "val.tsv")
     val_gen = val[:args.n_val_gen]
     dl = DataLoader(train, batch_size=args.batch_size, shuffle=True,
                     collate_fn=lambda b: collate(b, tok, args.max_len))

@@ -211,20 +211,30 @@ RULES = [
 ]
 
 
-def obfuscate(sentence, rng, n_rules=None, max_tries=10):
-    """문장에 규칙 2~4개를 골라 적용. (난독문, 적용 규칙 이름 리스트) 반환.
+# 난독화 강도. 복원률이 낮으면 모델을 바꾸기보다 강도를 낮춘다 (2026-10-07 dh 결정)
+#   n_rules: 문장당 규칙 개수 후보와 가중치, ratio_scale: 규칙별 적용 어절 비율 배수,
+#   one_rule_per_word: 한 어절에 규칙 하나만 (핣마릶처럼 겹쳐서 심해지는 것 방지)
+LEVELS = {
+    "normal": {"n_rules": ([2, 3, 4], [4, 4, 2]), "ratio_scale": 1.0, "one_rule_per_word": False},
+    "light": {"n_rules": ([1, 2], [5, 5]), "ratio_scale": 0.6, "one_rule_per_word": True},
+}
+
+
+def obfuscate(sentence, rng, n_rules=None, max_tries=10, level="normal"):
+    """문장에 규칙을 골라 적용. (난독문, 적용 규칙 이름 리스트) 반환.
     고른 규칙이 하나도 안 걸려 원문 그대로면 다시 고른다."""
     for _ in range(max_tries):
-        obf, applied = _obfuscate_once(sentence, rng, n_rules)
+        obf, applied = _obfuscate_once(sentence, rng, n_rules, LEVELS[level])
         if obf != sentence:
             break
     return obf, applied
 
 
-def _obfuscate_once(sentence, rng, n_rules):
+def _obfuscate_once(sentence, rng, n_rules, cfg):
     words = sentence.split(" ")
+    touched = set()
     if n_rules is None:
-        n_rules = rng.choices([2, 3, 4], weights=[4, 4, 2])[0]
+        n_rules = rng.choices(*cfg["n_rules"])[0]
     names = [r[0] for r in RULES]
     weights = [r[2] for r in RULES]
     chosen = set()
@@ -235,12 +245,14 @@ def _obfuscate_once(sentence, rng, n_rules):
     for name, fn, _, ratio in RULES:
         if name not in chosen:
             continue
-        cands = [k for k, w in enumerate(words) if fn(w, random.Random(0)) != w]
+        cands = [k for k, w in enumerate(words) if fn(w, random.Random(0)) != w
+                 and not (cfg["one_rule_per_word"] and k in touched)]
         if not cands:
             continue
-        n = max(1, round(len(words) * ratio))
+        n = max(1, round(len(words) * ratio * cfg["ratio_scale"]))
         for k in rng.sample(cands, min(n, len(cands))):
             words[k] = fn(words[k], rng)
+            touched.add(k)
         applied.append(name)
     return " ".join(words), applied
 

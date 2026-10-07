@@ -67,7 +67,9 @@ def read_tsv(path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--models", nargs="+", required=True, help="gec_kr(기준 모델) 또는 models/<이름> 경로")
+    ap.add_argument("--test_a", default="data/pairs/test_a.tsv", help="평가 A 파일 (강도별 데이터면 바꿔서 지정)")
     args = ap.parse_args()
+    TEST_SETS["A (같은 규칙)"] = ROOT / args.test_a
 
     sets = {k: read_tsv(p) for k, p in TEST_SETS.items() if p.exists()}
     pct = lambda v: "-" if v is None else f"{v:.1%}"

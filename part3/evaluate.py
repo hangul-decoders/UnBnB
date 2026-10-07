@@ -68,14 +68,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--models", nargs="+", required=True, help="gec_kr(기준 모델) 또는 models/<이름> 경로")
     ap.add_argument("--test_a", default="data/pairs/test_a.tsv", help="평가 A 파일 (강도별 데이터면 바꿔서 지정)")
+    ap.add_argument("--tag", default="", help="결과 파일 이름 뒤에 붙일 이름 (예: light → 평가_결과_light.md)")
     args = ap.parse_args()
     TEST_SETS["A (같은 규칙)"] = ROOT / args.test_a
+    suffix = f"_{args.tag}" if args.tag else ""
 
     sets = {k: read_tsv(p) for k, p in TEST_SETS.items() if p.exists()}
     pct = lambda v: "-" if v is None else f"{v:.1%}"
     out = ["# 평가 결과", "", "| 모델 | 평가 데이터 | 문장 수 | 완전 일치율 | CER | 부정 표현 유지 | 숫자 유지 |",
            "|---|---|---|---|---|---|---|"]
-    errors = open(ROOT / "part3/평가_오류사례.tsv", "w", encoding="utf-8")
+    errors = open(ROOT / f"part3/평가_오류사례{suffix}.tsv", "w", encoding="utf-8")
     errors.write("model\tset\tinput\toutput\ttarget\n")
     for name in args.models:
         baseline = name == "gec_kr"
@@ -94,8 +96,8 @@ def main():
     errors.close()
     out += ["", "- CER은 낮을수록 좋음. 괄호 안 숫자는 해당 항목이 있는 정답 문장 수",
             "- 기준 모델은 README 설정(repetition_penalty 2.0), 학습한 모델은 1.0으로 생성",
-            "- 틀린 사례 전체: `part3/평가_오류사례.tsv`"]
-    (ROOT / "part3/평가_결과.md").write_text("\n".join(out) + "\n", encoding="utf-8")
+            f"- 평가 A 파일: `{args.test_a}`", f"- 틀린 사례 전체: `part3/평가_오류사례{suffix}.tsv`"]
+    (ROOT / f"part3/평가_결과{suffix}.md").write_text("\n".join(out) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

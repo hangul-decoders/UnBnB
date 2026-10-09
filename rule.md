@@ -32,8 +32,8 @@ KoBART 기반 한국어 문법 교정 모델(`Soyoung97/gec_kr`)에 (난독문, 
 
 | 모델 | 서버 경로 | 내용 |
 |---|---|---|
-| **최고 모델 (현재)** | `~/UnBnB/models/normal_e6` | 어휘 확장 gec_kr + normal 8만 쌍, 6에폭. 평가 A 완전 일치 63.7% |
-| 실험 3 | `~/UnBnB/models/normal_v4_e6` | 원문당 난독문 4개, 6에폭 (2026-10-07 학습 중) |
+| **최고 모델 (현재)** | `~/UnBnB/models/normal_v4_e6` | 어휘 확장 gec_kr + normal 16만 쌍(원문당 난독문 4개), 6에폭. 평가 A 완전 일치 70.9% |
+| 실험 | `~/UnBnB/models/normal_e6` | normal 8만 쌍(원문당 2개), 6에폭 (63.7%) |
 | 실험 | `~/UnBnB/models/full` | normal, 3에폭 (54.4%) |
 | 실험 | `~/UnBnB/models/light_e6` | light, 6에폭 (46.6%) |
 | 시험 학습 | `~/UnBnB/models/trial_10k` | 1만 쌍, 1에폭 |

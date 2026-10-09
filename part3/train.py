@@ -74,6 +74,8 @@ def main():
     ap.add_argument("--dynamic", action="store_true", help="에폭마다 난독문을 새로 만듦 (외우기 방지)")
     ap.add_argument("--dyn_repeat", type=int, default=4, help="동적 모드: 한 에폭에 원문당 몇 번 보여줄지")
     ap.add_argument("--identity_ratio", type=float, default=0.1, help="동적 모드: (원문, 원문) 쌍 비율")
+    ap.add_argument("--orig_file", default=None,
+                    help="동적 모드: 학습 원문 파일(한 줄 한 문장). 없으면 train.tsv의 정답 문장을 씀")
     args = ap.parse_args()
 
     random.seed(args.seed)
@@ -86,7 +88,10 @@ def main():
     val = read_tsv(ROOT / args.data / "val.tsv")
     val_gen = val[:args.n_val_gen]
     if args.dynamic:
-        origs = sorted({y for _, y in train})  # 학습 원문만 (검증·평가 원문은 train.tsv에 없음)
+        if args.orig_file:
+            origs = sorted({ln for ln in (ROOT / args.orig_file).read_text(encoding="utf-8").splitlines() if ln})
+        else:
+            origs = sorted({y for _, y in train})  # 학습 원문만 (검증·평가 원문은 train.tsv에 없음)
         train = origs * args.dyn_repeat
         print(f"동적 난독화: 학습 원문 {len(origs):,}개 x {args.dyn_repeat}회/에폭", flush=True)
         dl = DataLoader(train, batch_size=args.batch_size, shuffle=True, num_workers=4,

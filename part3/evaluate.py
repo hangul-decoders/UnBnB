@@ -68,6 +68,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--models", nargs="+", required=True, help="gec_kr(기준 모델) 또는 models/<이름> 경로")
     ap.add_argument("--test_a", default="data/pairs/test_a.tsv", help="평가 A 파일 (강도별 데이터면 바꿔서 지정)")
+    ap.add_argument("--num_beams", type=int, default=4, help="학습한 모델의 빔 크기 (기준 모델은 README대로 4)")
     ap.add_argument("--tag", default="", help="결과 파일 이름 뒤에 붙일 이름 (예: light → 평가_결과_light.md)")
     args = ap.parse_args()
     TEST_SETS["A (같은 규칙)"] = ROOT / args.test_a
@@ -84,7 +85,8 @@ def main():
         tok, model, device = load("Soyoung97/gec_kr" if baseline else str(ROOT / name))
         for set_name, rows in sets.items():
             preds = correct([x for x, _ in rows], tok, model, device, batch_size=128,
-                            repetition_penalty=2.0 if baseline else 1.0)
+                            repetition_penalty=2.0 if baseline else 1.0,
+                            num_beams=4 if baseline else args.num_beams)
             em, cer, neg, n_neg, num, n_num = score(preds, [y for _, y in rows])
             out.append(f"| {name} | {set_name} | {len(rows):,} | {em:.1%} | {cer:.1%} | "
                        f"{pct(neg)} ({n_neg}) | {pct(num)} ({n_num}) |")
@@ -95,7 +97,7 @@ def main():
         del model
     errors.close()
     out += ["", "- CER은 낮을수록 좋음. 괄호 안 숫자는 해당 항목이 있는 정답 문장 수",
-            "- 기준 모델은 README 설정(repetition_penalty 2.0), 학습한 모델은 1.0으로 생성",
+            f"- 기준 모델은 README 설정(빔 4, repetition_penalty 2.0), 학습한 모델은 빔 {args.num_beams}, 1.0으로 생성",
             f"- 평가 A 파일: `{args.test_a}`", f"- 틀린 사례 전체: `part3/평가_오류사례{suffix}.tsv`"]
     (ROOT / f"part3/평가_결과{suffix}.md").write_text("\n".join(out) + "\n", encoding="utf-8")
 

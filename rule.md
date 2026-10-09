@@ -46,7 +46,7 @@ KoBART 기반 한국어 문법 교정 모델(`Soyoung97/gec_kr`)에 (난독문, 
 | 학습 쌍 (normal / light / 난독문 4개) | `~/UnBnB/data/pairs`, `data/pairs_light`, `data/pairs_v4` |
 | 로그 | `~/UnBnB/logs/` |
 
-- 모델 불러오기: `BartForConditionalGeneration.from_pretrained("~/UnBnB/models/normal_e6")` + 같은 폴더의 토크나이저 (`part1/gec_utils.py`의 `load()` 사용, 생성 시 `repetition_penalty=1.0`)
+- 모델 불러오기: `BartForConditionalGeneration.from_pretrained("~/UnBnB/models/normal_v4_e6")` + 같은 폴더의 토크나이저 (`part1/gec_utils.py`의 `load()` 사용, 생성 시 `repetition_penalty=1.0`)
 - 모델을 새로 학습하면 이 표를 갱신한다.
 
 ## 필수 규칙: 작업 기록 남기기

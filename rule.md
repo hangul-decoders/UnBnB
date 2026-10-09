@@ -40,7 +40,8 @@ KoBART 기반 한국어 문법 교정 모델(`Soyoung97/gec_kr`)에 (난독문, 
 
 | 모델 | 서버 경로 | 내용 |
 |---|---|---|
-| **최고 모델 (현재)** | `~/UnBnB/models/dyn_e8` | 어휘 확장 gec_kr + 동적 난독화(에폭마다 새로 비틀기, 원문 36,460 x 4회/에폭), 8에폭 중 7에폭 저장. 평가 A 74.9%, 평가 A2 74.2% (CER 2.1%) |
+| **최고 모델 (현재)** | `~/UnBnB/models/dyn_v2_e8` | 어휘 확장 gec_kr + 동적 난독화 + 확장·정리한 원문 53,217개(`data/clean_v2/train.txt`), 8에폭. 빔 8 기준 평가 A2 77.5% (CER 1.7%), 평가 A 80.7% (CER 1.5%) |
+| 실험 | `~/UnBnB/models/dyn_e8` | 동적 난독화, 원문 36,460개, 8에폭 중 7에폭 저장. 빔 8 기준 A2 74.4% (CER 2.1%) |
 | 실험 | `~/UnBnB/models/normal_v4_e6` | normal 16만 쌍(원문당 난독문 4개 고정), 6에폭. 평가 A 70.9%, A2 71.7% |
 | 실험 | `~/UnBnB/models/normal_e6` | normal 8만 쌍(원문당 2개), 6에폭 (63.7%) |
 | 실험 | `~/UnBnB/models/full` | normal, 3에폭 (54.4%) |
@@ -52,11 +53,12 @@ KoBART 기반 한국어 문법 교정 모델(`Soyoung97/gec_kr`)에 (난독문, 
 |---|---|
 | NSMC 원본 | `~/UnBnB/data/raw` |
 | 깨끗한 원문 | `~/UnBnB/data/clean/{train,test}.txt` |
+| 확장·정리한 학습 원문 (최고 모델용) | `~/UnBnB/data/clean_v2/train.txt` |
 | 학습 쌍 (normal / light / 난독문 4개) | `~/UnBnB/data/pairs`, `data/pairs_light`, `data/pairs_v4` |
 | 최종 보고용 평가 A2 | `~/UnBnB/data/pairs/test_a2.tsv` |
 | 로그 | `~/UnBnB/logs/` |
 
-- 모델 불러오기: `BartForConditionalGeneration.from_pretrained("~/UnBnB/models/dyn_e8")` + 같은 폴더의 토크나이저 (`part1/gec_utils.py`의 `load()` 사용, 생성 시 `repetition_penalty=1.0`)
+- 모델 불러오기: `BartForConditionalGeneration.from_pretrained("~/UnBnB/models/dyn_v2_e8")` + 같은 폴더의 토크나이저 (`part1/gec_utils.py`의 `load()` 사용, 생성 시 `num_beams=8`, `repetition_penalty=1.0`)
 - 모델을 새로 학습하면 이 표를 갱신한다.
 
 ## 필수 규칙: 작업 기록 남기기
